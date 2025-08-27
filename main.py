@@ -12,42 +12,65 @@ def get_connection():
 def show_tasks():
     with get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT id, task FROM tasks
-                """)
+            cur.execute("select id, task from taasks")
             res = cur.fetchall()
             if not res:
-                print("Hali hech qanday task yo‘q.")
-
+                print("hali hech qanday task yo‘q.")
             else:
                 for task_id, task in res:
                     print(f"{task_id}. {task}")
 
-while True:
-    command = input("""
-    1. Task qo'shish
-    2. Tasklarni ko'rish
-    3. Task ni o`chirish
-    4. Chiqish
-    Kiriting: """)
+def del_task():
+    task_id = int(input('ochiradigan task id si: '))
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("delete from taasks where id = %s", (task_id,))
+        conn.commit()
+    print("task o'chirildi!")
 
+def update_task():
+    task_id = int(input("o'zgartirmoqchi bo'lgan task id si: "))
+    new_task = input("yangi taskni kiriting: ")
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute("update taasks set task = %s where id = %s", (new_task, task_id))
+        conn.commit()
+    print("task yangilandi!")
 
-    if command == '1':
-        task = input("Vazifani kiriting: ")
-        with get_connection() as conn:
-            with conn.cursor() as cur:
-                cur.execute("""
-                    insert into tasks(task)
-                    values (%s)
-                """, (task,))
-            conn.commit()
-        print("Task qo'shildi!")
+def start():
+    while True:
+        command = input("""
+        1. task qo'shish
+        2. tasklarni ko'rish
+        3. taskni o'chirish
+        4. taskni o'zgartirish
+        5. chiqish
+        kiriting: """)
 
+        if command == '1':
+            task = input("vazifani kiriting: ")
+            with get_connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute("insert into taasks(task) values (%s)", (task,))
+                conn.commit()
+            print("task qo'shildi!")
 
-    elif command == '2':
-        show_tasks()
+        elif command == '2':
+            show_tasks()
 
-    elif command == '3':
-        show_tasks()
-        task_id = int(input(''))
+        elif command == '3':
+            show_tasks()
+            del_task()
 
+        elif command == '4':
+            show_tasks()
+            update_task()
+
+        elif command == '5':
+            print('yakunlandi')
+            break
+
+        else:
+            print("noto'g'ri buyruq!")
+
+start()
